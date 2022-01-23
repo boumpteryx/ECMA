@@ -1,12 +1,17 @@
 include("parser.jl")
 include("dualisation.jl")
-
+include("branch_and_cut.jl")
+include("heuristique.jl")
+include("plans_coupants.jl")
 
 ### resolution par dualisation
 dualisation("testyMcTestFace")
 
 ### resolution par plans coupants
+# plans_coupants("testyMcTestFace")
 
-### resolution par LazyCallback
-# Il est imposé d'utiliser 1 seul thread en Julia avec CPLEX pour utiliser les callbacks
-MOI.set(m, MOI.NumberOfThreads(), 1)
+### resolution par LazyCallback (branch-and-cut)
+# branch_and_cut("testyMcTestFace")
+
+### heuristique
+# heuristique("testyMcTestFace")
