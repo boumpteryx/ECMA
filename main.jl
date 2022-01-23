@@ -4,6 +4,8 @@ include("branch_and_cut.jl")
 include("heuristique.jl")
 include("plans_coupants.jl")
 
+start = time()
+
 ### resolution par dualisation
 dualisation("20_USA-road-d.BAY.gr")
 
@@ -15,3 +17,13 @@ dualisation("20_USA-road-d.BAY.gr")
 
 ### heuristique
 # heuristique("20_USA-road-d.BAY.gr")
+
+
+
+computation_time = time() - start
+println(computation_time)
+
+
+# for file in readdir("./Instances_ECMA")
+  # println(file)
+# end
