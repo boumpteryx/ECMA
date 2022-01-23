@@ -5,13 +5,13 @@ include("heuristique.jl")
 include("plans_coupants.jl")
 
 ### resolution par dualisation
-dualisation("testyMcTestFace")
+dualisation("20_USA-road-d.BAY.gr")
 
 ### resolution par plans coupants
-# plans_coupants("testyMcTestFace")
+# plans_coupants("20_USA-road-d.BAY.gr")
 
 ### resolution par LazyCallback (branch-and-cut)
-# branch_and_cut("testyMcTestFace")
+# branch_and_cut("20_USA-road-d.BAY.gr")
 
 ### heuristique
-# heuristique("testyMcTestFace")
+# heuristique("20_USA-road-d.BAY.gr")
