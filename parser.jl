@@ -1,11 +1,11 @@
 # parser
 
 function read_instance(MyFileName::String)
-  # path = "./Instances_ECMA/" + MyFileName
+  path = "./Instances_ECMA/" * MyFileName
 	# Si le fichier path existe
-	if isfile("./Instances_ECMA/20_USA-road-d.BAY.gr")
+	if isfile(path) # "./Instances_ECMA/20_USA-road-d.BAY.gr"
 		# L’ouvrir
-		myFile = open("./Instances_ECMA/20_USA-road-d.BAY.gr")
+		myFile = open(path) # "./Instances_ECMA/20_USA-road-d.BAY.gr"
 
     # Lire les premieres lignes
     n = parse(Int64, split(readline(myFile), " ")[3])
