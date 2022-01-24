@@ -3,9 +3,9 @@
 function read_instance(MyFileName::String)
   path = "./Instances_ECMA/" * MyFileName
 	# Si le fichier path existe
-	if isfile(path) # "./Instances_ECMA/20_USA-road-d.BAY.gr"
+	if isfile(path) # exemple : "./Instances_ECMA/20_USA-road-d.BAY.gr"
 		# L’ouvrir
-		myFile = open(path) # "./Instances_ECMA/20_USA-road-d.BAY.gr"
+		myFile = open(path)
 
     # Lire les premieres lignes
     n = parse(Int64, split(readline(myFile), " ")[3])
@@ -51,9 +51,7 @@ function read_instance(MyFileName::String)
 		data = readlines(myFile)
 		for datum in data
       line = split(datum, " ")
-      # pop!(line[3])
       line[3] = chop(line[3])
-      # pop!(line[4])
       line[4] = chop(line[4])
       Mat_d[parse(Int64,line[1]),parse(Int64,line[2])] = parse(Int64,line[3])
       Mat_D[parse(Int64,line[1]),parse(Int64,line[2])] = parse(Float64,line[4])
