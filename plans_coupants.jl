@@ -55,6 +55,7 @@ function plans_coupants(MyFileName::String)
     #resolution
     optimize!(m1)
     z1 = JuMP.objective_value.(m1)
+    delta_1 = JuMP.getvalue.( m1[:delta1] )
 
 
     #### sous-probleme 2 ####
@@ -74,10 +75,15 @@ function plans_coupants(MyFileName::String)
     #resolution
     optimize!(m2)
     z2 = JuMP.objective_value.(m2)
+    delta_2 = JuMP.getvalue.( m2[:delta2] )
 
-    #### adding Constraints TODO
+    if z2 >= S + 1e-6 || z1 > z_star + 1e-6 && z1 < z_star - 1e-6 # pour gerer la premiere iteration
+      #### adding Constraints
+      @constraint(m, z >= sum(x_val[i,j]*d[i,j]*(1+ delta_1[i,j]) for i in 1:n, j in 1:n if d[i,j] != 0))
+      @constraint(m, sum(y_val[v]*(p[v] + ph[v]*delta_2[v]) for v in 1:n) <= S)
 
-    optimize!(m)
-    z_star = JuMP.objective_value.(m)
+      optimize!(m)
+      z_star = JuMP.objective_value.(m)
+    end
   end
 end

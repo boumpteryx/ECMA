@@ -76,14 +76,52 @@ function branch_and_cut(MyFileName::String)
           x_val = callback_value(cb_data, x)
           y_val = callback_value(cb_data, y)
           z_val = callback_value(cb_data, z)
-          z1 = z_val + 1
-          z2 = S + 1
 
-          # TODO
+          #### sous-probleme 1 ####
+          # Create the model
+          m1 = Model(CPLEX.Optimizer)
+
+          ## Variables
+          @variable(m1, delta1[1:n,1:n] >= 0)
+
+          ## Constraints
+          @constraint(m1,[i in 1:n, j in 1:n], delta1[i,j] <= D[i,j])
+          @constraint(m1, sum(delta1[i,j] for i in 1:n, j in 1:n) <= d1)
+
+          ## Objective
+          @Objective(m1, Max, sum(d[i,j]*(1 + delta1[i,j])*x_val[i,j] for i in 1:n, j in 1:n if d[i,j] != 0))
+
+          #resolution
+          optimize!(m1)
+          z1 = JuMP.objective_value.(m1)
+          delta_1 = JuMP.getvalue.( m1[:delta1] )
+
+
+          #### sous-probleme 2 ####
+          # Create the model
+          m2 = Model(CPLEX.Optimizer)
+
+          ## Variables
+          @variable(m2, delta2[1:n] >= 0)
+
+          ## Constraints
+          @constraint(m2,[v in 1:n], delta2[v] <= 2)
+          @constraint(m2, sum(delta2[v] for v in 1:n) <= d2)
+
+          ## Objective
+          @Objective(m2, Max, sum((p[i] + delta2[i]*ph[i])*y_val[i] for i in 1:n))
+
+          #resolution
+          optimize!(m2)
+          z2 = JuMP.objective_value.(m2)
+          delta_2 = JuMP.getvalue.( m2[:delta2] )
+
           if z2 >= S + 1e-6 || z1 > z_val + 1e-6 && z1 < z_val - 1e-6
-              con = @build_constraint(x <= 1)
-              MOI.submit(m, MOI.LazyConstraint(cb_data), con)
-              println("Add constraint x <= 1")
+            con1 = @build_constraint(z >= sum(x_val[i,j]*d[i,j]*(1+ delta_1[i,j]) for i in 1:n, j in 1:n if d[i,j] != 0))
+            MOI.submit(m, MOI.LazyConstraint(cb_data), con1)
+            con2 = @build_constraint(sum(y_val[v]*(p[v] + ph[v]*delta_2[v]) for v in 1:n) <= S)
+            MOI.submit(m, MOI.LazyConstraint(cb_data), con2)
+            println("Add constraint x <= 1")
           end
       end
   end
