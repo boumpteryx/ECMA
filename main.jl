@@ -7,10 +7,10 @@ include("plans_coupants.jl")
 start = time()
 
 ### resolution par dualisation
-dualisation("20_USA-road-d.BAY.gr")
+# dualisation("20_USA-road-d.BAY.gr")
 
 ### resolution par plans coupants
-# plans_coupants("20_USA-road-d.BAY.gr")
+plans_coupants("20_USA-road-d.BAY.gr")
 
 ### resolution par LazyCallback (branch-and-cut)
 # branch_and_cut("20_USA-road-d.BAY.gr")

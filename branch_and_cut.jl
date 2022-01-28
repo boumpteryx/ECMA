@@ -41,7 +41,7 @@ function branch_and_cut(MyFileName::String)
   ## Variables
   @variable(m, x[1:n,1:n], Bin) # certains arcs n'existent pas, ils ne sont pas utilises dans les contraintes
   @variable(m, y[1:n], Bin)
-  @variable(m,z >= 0)
+  @variable(m, z >= 0)
 
   ## Constraints
   @constraint(m,sum(x[s,j] for j in 1:n if d[s,j] != 0) == 1)
@@ -50,10 +50,10 @@ function branch_and_cut(MyFileName::String)
   @constraint(m,[v in 1:n; v != t], y[v] == sum(x[v,j] for j in 1:n if d[v,j] != 0))
   @constraint(m,[i in 1:n; i != t], y[t] == sum(x[i,t] for j in 1:n if d[j,t] != 0))
   @constraint(m, sum(p[i]*y[i] for i in 1:n) <= S)
-  @constraint(m, z > sum(d[i][j]*x[i][j] for i in 1:n, j in 1:n if d[i][j] != 0) ) # objectif robuste reformule
+  @constraint(m, z >= sum(d[i][j]*x[i][j] for i in 1:n, j in 1:n if d[i][j] != 0)) # objectif robuste reformule
 
   ## Objective
-  @Objective(m, Min, z)
+  @objective(m, Min, z)
 
   # Fonction exécutée à chaque callback
   #
@@ -89,7 +89,7 @@ function branch_and_cut(MyFileName::String)
           @constraint(m1, sum(delta1[i,j] for i in 1:n, j in 1:n) <= d1)
 
           ## Objective
-          @Objective(m1, Max, sum(d[i,j]*(1 + delta1[i,j])*x_val[i,j] for i in 1:n, j in 1:n if d[i,j] != 0))
+          @objective(m1, Max, sum(d[i,j]*(1 + delta1[i,j])*x_val[i,j] for i in 1:n, j in 1:n if d[i,j] != 0))
 
           #resolution
           optimize!(m1)
@@ -109,7 +109,7 @@ function branch_and_cut(MyFileName::String)
           @constraint(m2, sum(delta2[v] for v in 1:n) <= d2)
 
           ## Objective
-          @Objective(m2, Max, sum((p[i] + delta2[i]*ph[i])*y_val[i] for i in 1:n))
+          @objective(m2, Max, sum((p[i] + delta2[i]*ph[i])*y_val[i] for i in 1:n))
 
           #resolution
           optimize!(m2)
