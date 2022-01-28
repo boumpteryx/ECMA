@@ -50,7 +50,7 @@ function branch_and_cut(MyFileName::String)
   @constraint(m,[v in 1:n; v != t], y[v] == sum(x[v,j] for j in 1:n if d[v,j] != 0))
   @constraint(m,[i in 1:n; i != t], y[t] == sum(x[i,t] for j in 1:n if d[j,t] != 0))
   @constraint(m, sum(p[i]*y[i] for i in 1:n) <= S)
-  @constraint(m, z >= sum(d[i][j]*x[i][j] for i in 1:n, j in 1:n if d[i][j] != 0)) # objectif robuste reformule
+  @constraint(m, z >= sum(d[i,j]*x[i,j] for i in 1:n, j in 1:n if d[i,j] != 0)) # objectif robuste reformule
 
   ## Objective
   @objective(m, Min, z)
