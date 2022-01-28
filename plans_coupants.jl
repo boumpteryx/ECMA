@@ -16,11 +16,11 @@ function plans_coupants(MyFileName::String)
   @variable(m, z >= 0)
 
   ## Constraints
-  @constraint(m,sum(x[s,j] for j in 1:n if d[s,j] != 0) == 1)
-  @constraint(m,sum(x[i,t] for i in 1:n if d[i,t] != 0) == 1)
-  @constraint(m,[v in 1:n; v != s && v != t], sum(x[i,v] for i in 1:n if d[i,v] != 0) == sum(x[v,j] for j in 1:n if d[v,j] != 0))
-  @constraint(m,[v in 1:n; v != t], y[v] == sum(x[v,j] for j in 1:n if d[v,j] != 0))
-  @constraint(m,[i in 1:n; i != t], y[t] == sum(x[i,t] for j in 1:n if d[j,t] != 0))
+  @constraint(m, sum(x[s,j] for j in 1:n if d[s,j] != 0) == 1)
+  @constraint(m, sum(x[i,t] for i in 1:n if d[i,t] != 0) == 1)
+  @constraint(m, [v in 1:n; v != s && v != t], sum(x[i,v] for i in 1:n if d[i,v] != 0) == sum(x[v,j] for j in 1:n if d[v,j] != 0))
+  @constraint(m, [v in 1:n; v != t], y[v] == sum(x[v,j] for j in 1:n if d[v,j] != 0))
+  @constraint(m, [i in 1:n; i != t], y[t] == sum(x[i,t] for i in 1:n if d[i,t] != 0))
   @constraint(m, sum(p[i]*y[i] for i in 1:n) <= S)
   @constraint(m, z >= sum(d[i,j]*x[i,j] for i in 1:n, j in 1:n if d[i,j] != 0)) # objectif robuste reformule
 
@@ -29,7 +29,8 @@ function plans_coupants(MyFileName::String)
 
   #resolution
   optimize!(m)
-  z_star = JuMP.objective_value.(m) # problem
+
+  z_star = JuMP.objective_value.(m)
   x_star = JuMP.getvalue.( m[:x] )
   y_star = JuMP.getvalue.( m[:y] )
 

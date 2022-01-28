@@ -48,7 +48,7 @@ function branch_and_cut(MyFileName::String)
   @constraint(m,sum(x[i,t] for i in 1:n if d[i,t] != 0) == 1)
   @constraint(m,[v in 1:n; v != s && v != t], sum(x[i,v] for i in 1:n if d[i,v] != 0) == sum(x[v,j] for j in 1:n if d[v,j] != 0))
   @constraint(m,[v in 1:n; v != t], y[v] == sum(x[v,j] for j in 1:n if d[v,j] != 0))
-  @constraint(m,[i in 1:n; i != t], y[t] == sum(x[i,t] for j in 1:n if d[j,t] != 0))
+  @constraint(m,[i in 1:n; i != t], y[t] == sum(x[i,t] for i in 1:n if d[i,t] != 0))
   @constraint(m, sum(p[i]*y[i] for i in 1:n) <= S)
   @constraint(m, z >= sum(d[i,j]*x[i,j] for i in 1:n, j in 1:n if d[i,j] != 0)) # objectif robuste reformule
 
@@ -121,7 +121,7 @@ function branch_and_cut(MyFileName::String)
             MOI.submit(m, MOI.LazyConstraint(cb_data), con1)
             con2 = @build_constraint(sum(y_val[v]*(p[v] + ph[v]*delta_2[v]) for v in 1:n) <= S)
             MOI.submit(m, MOI.LazyConstraint(cb_data), con2)
-            println("Add constraint x <= 1")
+            println("Add constraints")
           end
       end
   end
