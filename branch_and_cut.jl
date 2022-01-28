@@ -117,9 +117,9 @@ function branch_and_cut(MyFileName::String)
           delta_2 = JuMP.getvalue.( m2[:delta2] )
 
           if z2 >= S + 1e-6 || z1 > z_val + 1e-6 && z1 < z_val - 1e-6
-            con1 = @build_constraint(z >= sum(x_val[i,j]*d[i,j]*(1+ delta_1[i,j]) for i in 1:n, j in 1:n if d[i,j] != 0))
+            con1 = @build_constraint(z >= sum(x[i,j]*d[i,j]*(1+ delta_1[i,j]) for i in 1:n, j in 1:n if d[i,j] != 0))
             MOI.submit(m, MOI.LazyConstraint(cb_data), con1)
-            con2 = @build_constraint(sum(y_val[v]*(p[v] + ph[v]*delta_2[v]) for v in 1:n) <= S)
+            con2 = @build_constraint(sum(y[v]*(p[v] + ph[v]*delta_2[v]) for v in 1:n) <= S)
             MOI.submit(m, MOI.LazyConstraint(cb_data), con2)
             println("Add constraints")
           end

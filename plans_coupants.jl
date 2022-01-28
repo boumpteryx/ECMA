@@ -37,7 +37,7 @@ function plans_coupants(MyFileName::String)
   z1 = z_star + 1
   z2 = S + 1
 
-  while z2 >= S + 1e-6 || z1 > z_star + 1e-6 && z1 < z_star - 1e-6
+  while z2 >= S + 1e-3 || z1 > z_star + 1e-3 && z1 < z_star - 1e-3
 
     #### sous-probleme 1 ####
     # Create the model
@@ -78,10 +78,10 @@ function plans_coupants(MyFileName::String)
     z2 = JuMP.objective_value.(m2)
     delta_2 = JuMP.getvalue.( m2[:delta2] )
 
-    if z2 >= S + 1e-6 || z1 > z_star + 1e-6 && z1 < z_star - 1e-6 # pour gerer la premiere iteration
+    if z2 >= S + 1e-3 || z1 > z_star + 1e-3 && z1 < z_star - 1e-3 # pour gerer la premiere iteration
       #### adding Constraints
-      @constraint(m, z >= sum(x_val[i,j]*d[i,j]*(1+ delta_1[i,j]) for i in 1:n, j in 1:n if d[i,j] != 0))
-      @constraint(m, sum(y_val[v]*(p[v] + ph[v]*delta_2[v]) for v in 1:n) <= S)
+      @constraint(m, z >= sum(x[i,j]*d[i,j]*(1+ delta_1[i,j]) for i in 1:n, j in 1:n if d[i,j] != 0))
+      @constraint(m, sum(y[v]*(p[v] + ph[v]*delta_2[v]) for v in 1:n) <= S)
 
       optimize!(m)
       z_star = JuMP.objective_value.(m)
