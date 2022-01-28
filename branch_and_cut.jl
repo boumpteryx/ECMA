@@ -73,9 +73,9 @@ function branch_and_cut(MyFileName::String)
           CPLEX.load_callback_variable_primal(cb_data, context_id)
 
           # On récupère la valeur de x & y
-          x_val = callback_value(cb_data, x)
-          y_val = callback_value(cb_data, y)
-          z_val = callback_value(cb_data, z)
+          x_val = JuMP.callback_value.(cb_data, x)
+          y_val = JuMP.callback_value.(cb_data, y)
+          z_val = JuMP.callback_value.(cb_data, z)
 
           #### sous-probleme 1 ####
           # Create the model
