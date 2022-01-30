@@ -38,12 +38,78 @@ function dual_relax(MyFileName::String)
   return JuMP.objective_value.(m) # enlever . et JuMP
 end
 
+function Trouve_min(P,Q,d):
+  min1 = -1
+  min2 = -1
+  dist = -1
+  for p in P
+    for q in Q
+      if d[p][q] > 0 && (dist == -1 || d[p][q] < dist)
+        min1 = q
+        min2 = p
+        dist = d[p][q]
+      end
+    end
+  end
+  return min1,min2,dist
+end
+
+function Dijkstra(n,s,d) 
+  M = Array{Int64,3}(zeros(n,n,n))
+  P = Array{Int64}(zeros(1))
+  Q = Array{Int64}(zeros(n-1))
+  shift = false
+  for i in [1:n]
+    if shift == false
+      if i != s
+        Q[i] = i
+      else 
+        P[1] = s
+        shift = true
+      end
+    else
+      Q[i-1] = i
+    end
+  end
+  for i in [1:n]
+    if i != s
+      M[i,1] = -1
+      M[i,2] = -1
+    end
+  end
+  for q in Q
+    if d[s][q] > 0
+      M[q][1] = d[q][r]
+      M[q][2] = q
+      M[q][3] = 1
+    end
+  end
+  while size(Q)[1] > 0
+    p,q,dist = Trouve_min(P,Q,d)
+    push!(P,q)
+    j = 1
+    while Q[j] != q
+      j = j+1
+    end
+    deleteat!(Q,j)
+    for r in Q
+      if (d[q][r] > 0) && (M[q][1] + d[q][r] < M[r][1] || M[r][1] == -1)
+        M[r][1] = M[q][1] + d[q][r]
+        M[r][2] = q
+        M[r][3] = M[q][3]+1
+      end
+    end
+  end
+  return M
+end
+
+
 function heuristic(MyFileName::String)
   n, s, t, S, d1, d2, p, ph, d, D = read_instance(MyFileName)
 
   relax_dual_value = dual_relax(MyFileName)
 
-  # do heuristic
+  M = Dijkstra(n,s,d)
 
 
 end
