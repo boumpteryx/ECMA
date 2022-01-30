@@ -10,10 +10,10 @@ start = time()
 # dualisation("20_USA-road-d.BAY.gr")
 
 ### resolution par plans coupants
-# plans_coupants("20_USA-road-d.BAY.gr")
+plans_coupants("20_USA-road-d.BAY.gr")
 
 ### resolution par LazyCallback (branch-and-cut)
-branch_and_cut("20_USA-road-d.COL.gr")
+# branch_and_cut("20_USA-road-d.COL.gr")
 
 ### heuristique
 # heuristique("20_USA-road-d.BAY.gr")
