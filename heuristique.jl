@@ -54,8 +54,11 @@ function Trouve_min(P,Q,d):
   return min1,min2,dist
 end
 
-function Dijkstra(n,s,d) 
-  M = Array{Int64,3}(zeros(n,n,n))
+function Dijkstra(n,s,t,d) 
+  M = Array{Int64,6}(zeros(n,n,n))
+  # 1:Distance à s
+  # 2:Prédecesseur
+  # 3:Nombre de prédecesseurs
   P = Array{Int64}(zeros(1))
   Q = Array{Int64}(zeros(n-1))
   shift = false
@@ -80,7 +83,7 @@ function Dijkstra(n,s,d)
   for q in Q
     if d[s][q] > 0
       M[q][1] = d[q][r]
-      M[q][2] = q
+      M[q][2] = s
       M[q][3] = 1
     end
   end
@@ -103,13 +106,30 @@ function Dijkstra(n,s,d)
   return M
 end
 
+function appendsorted(L,x,v)
+  i = 1
+  while v > L[i] and i <= size[L][1]
+    i += 1
+  insert!(L,i,x)
+
 
 function heuristic(MyFileName::String)
   n, s, t, S, d1, d2, p, ph, d, D = read_instance(MyFileName)
 
   relax_dual_value = dual_relax(MyFileName)
 
-  M = Dijkstra(n,s,d)
+  H1 = Dijkstra(n,s,d)
+  H2 = Dijkstra(n,t,d)
+  Current = s
+  Neighbours = Array{Int64}(zeros(0))
+  Weight = S
+  AugWeight = d2
+  AugDist = d1
+  while Current != t
+    for v in [1:n]
+      if d[Current][v] > 0 && H2[1][Current] > H2[1][v]
+        appendsorted(Neighbours,v,d[Current[v]])
+    
 
 
 end
