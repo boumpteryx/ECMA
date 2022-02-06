@@ -38,16 +38,16 @@ function dual_relax(MyFileName::String)
   return JuMP.objective_value.(m) # enlever . et JuMP
 end
 
-function Trouve_min(P,Q,d):
+function Trouve_min(P,Q,d)
   min1 = -1
   min2 = -1
   dist = -1
   for p in P
     for q in Q
-      if d[p][q] > 0 && (dist == -1 || d[p][q] < dist)
-        min1 = q
-        min2 = p
-        dist = d[p][q]
+      if d[p,q] > 0 && (dist == -1 || d[p,q] < dist)
+        min1 = p
+        min2 = q
+        dist = d[p,q]
       end
     end
   end
@@ -59,22 +59,9 @@ function Dijkstra(n,s,t,d)
   # 1:Distance à s
   # 2:Prédecesseur
   # 3:Nombre de prédecesseurs
-  P = Array{Int64}(zeros(1))
-  Q = Array{Int64}(zeros(n-1))
-  shift = false
-  for i in [1:n]
-    if shift == false
-      if i != s
-        Q[i] = i
-      else 
-        P[1] = s
-        shift = true
-      end
-    else
-      Q[i-1] = i
-    end
-  end
-  for i in [1:n]
+  P = [s]
+  Q = [i for i in 1:n if i!=s]
+  for i in 1:n
     if i != s
       M[i,1] = -1
       M[i,2] = -1
@@ -82,7 +69,7 @@ function Dijkstra(n,s,t,d)
   end
   for q in Q
     if d[s,q] > 0
-      M[q,1] = d[q,r]
+      M[q,1] = d[q,s]
       M[q,2] = s
       M[q,3] = 1
     end
@@ -111,12 +98,17 @@ function sortdistance(n,d)
   Sorted_d = Array{Int64}(zeros(0))
   Sorted_i = Array{Int64}(zeros(0))
   Sorted_j = Array{Int64}(zeros(0))
-  for i in [1:n]
-    for j in [1:n]
-      k = 0
-      dist = d[i][j]
-      while k < size(Sorted_d)[1] && dist < Sorted_d[k]
-        k += 1
+  for i in 1:n
+    for j in 1:n
+      k = 1
+      dist = d[i,j]
+      done = false
+      while k <= size(Sorted_d)[1] && done == false
+        if dist < Sorted_d[k]
+          k += 1
+        else
+          done = true
+        end
       end
       insert!(Sorted_d,k,dist)
       insert!(Sorted_i,k,i)
@@ -128,7 +120,7 @@ end
 
 function evaluatedist(L,Sorted_i,Sorted_j,d,D,d1)
   distance = 0
-  for l in [1:size(L)[1]-1]
+  for l in 1:(size(L)[1]-1)
     distance += d[L[l],L[l+1]]
   end
   remaining = d1
@@ -136,7 +128,7 @@ function evaluatedist(L,Sorted_i,Sorted_j,d,D,d1)
   acc = 1
   while k > 0 && remaining > 0
     i,j = Sorted_i[acc],Sorted_j[acc]
-    for l in [1:size(L)[1]-1]
+    for l in 1:(size(L)[1]-1)
       if L[l] == i && L[l+1] == j
         k -= 1
         if D[i,j] < remaining
@@ -147,37 +139,43 @@ function evaluatedist(L,Sorted_i,Sorted_j,d,D,d1)
           remaining = 0
         end
       end
-    acc += 1
     end
+    acc = acc + 1
   end
   return distance
 end
 
-function sortweigth(n,ph)
-  Sorted = array{Int64}(zeros(0))
-  for i in [1:n]
-    k = 0
-    while k < size(Sorted)[1] && ph[i] < ph[k]
-      k += 1
+function sortweight(n,ph)
+  Sorted = []
+  for i in 1:n
+    k = 1
+    done = false
+    while k <= size(Sorted)[1] && done == false
+      if ph[i] < ph[Sorted[k]]
+        k += 1
+      else
+        done =true
+      end
     end
     insert!(Sorted,k,i)
   end
   return Sorted
 end
 
-function evaluateweight(L,Sorted,p,ph,d2)
+function evaluateweight(L,Sorted,ph,d2)
   k = size(L)[1]
   acc = 1
   remaining = d2
+  weight = 0
   while k > 0 && remaining > 0
     i = Sorted[acc]
     if i in L
       k -= 1
       if 2 < remaining
-        weight += 2*ph[acc]
+        weight += 2*ph[i]
         remaining -= 2
       else
-        weight += remaining * ph[acc]
+        weight += remaining * ph[i]
         remaining = 0
       end
     end
@@ -189,8 +187,7 @@ end
 
 
 
-
-function TotalValue(L,Value,Weight,Relativewweight,Order,Limit)
+function TotalValue(L,Value,Weight,Relativeweight,Order,Limit)
   total = 0
   weight = Array{Int64}(zeros(0))
   relativeweight = Array{Int64}(zeros(0))
@@ -207,56 +204,55 @@ function coeff(i,j)
   return 1
 end
 
-function heuristic(MyFileName::String,instant_tol,global_tol)
-  n, s, t, S, d1, d2, p, ph, d, D = read_instance(MyFileName)
+#function heuristic(MyFileName::String,instant_tol,global_tol)
+  #n, s, t, S, d1, d2, p, ph, d, D = read_instance(MyFileName)
 
-  relax_dual_value = dual_relax(MyFileName)
-
+  #relax_dual_value = dual_relax(MyFileName)
+function heuristic(instant_tol,global_tol,n, s, t, S, d1, d2, p, ph, d, D)
   Ones = Array{Int64,2}(zeros(n,n))
-  for i in [1:n]
-    for j in [1:n]
+  for i in 1:n
+    for j in 1:n
     Ones[i,j] = 1
     end
   end
-  H1 = Dijkstra(n,s,Ones)
-  H2 = Dijkstra(n,t,Ones)
+  H1 = Dijkstra(n,s,t,Ones)
+  H2 = Dijkstra(n,t,s,Ones)
   Length1 = Array{Int64}(zeros(n))
   for i in [1:n]
     Length1[i] = H1[i,3] + H2[i,3]
   end
 
   New_d = Array{Int64,2}(zeros(n,n))
-  for j in [1:n]
-    for i in [1:n]
+  for j in 1:n
+    for i in 1:n
       if d[i,j] > 0
-        length = floor(Length1[i]+Length1[j]/2)
-        extra = min(d1/length,coeff(i,j)*D[i,j]*d[i,j])
+        length = (Length1[i]+Length1[j])/2
+        extra = min(floor(d1/length),coeff(i,j)*D[i,j]*d[i,j])
         New_d[i,j] = d[i,j] + extra
       end
     end
   end
-  H3 = Dijkstra(n,s,New_d)
-  H4 = Dijkstra(n,t,New_d)
+  H3 = Dijkstra(n,s,t,New_d)
+  H4 = Dijkstra(n,t,s,New_d)
   Length2 = Array{Int64}(zeros(n))
   for i in [1:n]
     Length2[i] = H3[i,3] + H4[i,3]
   end
 
-  Sortedweight = sortweigth(n,p)
+  Sortedweight = sortweight(n,p)
+  I,J = sortdistance(n,d)
   pmin = p[Sortedweight[n]]
   pmax = p[Sortedweight[1]]
-  P_lim = Array{Int64}(zeros(n))
-  for i in range[1:n]
-    P_lim[i] = S - H2[i,3] * pmin
-  end
+  P_lim = [S - H2[i,3]*pmin for i in 1:n]
 
   DecisionTree = [[s,p[s],global_tol,false]]
-  DecisionMatrix = [[] for i in [1:n]]
-  while (t in DecisionTree) == false
+  DecisionMatrix = [[] for i in 1:n]
+  Current = s
+  while Current != t && size(DecisionTree)[1] > 0
     k = size(DecisionTree)[1]
     u,tol = DecisionTree[k][1],DecisionTree[k][3]
-    for v in [1:n]
-      if New_d[u,v] > 0 && ((H4[v,3] - H4[u,3]) < (-1 + min(tol,instant_tol)))
+    for v in 1:n
+      if New_d[u,v] > 0 && ((H4[v,3] - H4[u,3]) <= (-1 + min(tol,instant_tol)))
         i = 1
         while i < size(DecisionMatrix[u])[1] && (H4[v,3],New_d[u,v]) > (H4[DecisionMatrix[u][i],3],New_d[u,[DecisionMatrix[u][i]]])
           i += 1
@@ -264,22 +260,37 @@ function heuristic(MyFileName::String,instant_tol,global_tol)
         insert!(DecisionMatrix[u],i,v)
       end
     end
-    while size(DecisionMatrix[u])[1] == 0:
-      pop!(DecisionTree)
-      k -= 1
-      u,tol = DecisionTree[k][1],DecisionTree[k][3]
-      popfirst!(DecisionMatrix[u])
-    end
-    v = DecisionMatrix[u][1]
     forward = false
     while forward == false
+      while size(DecisionMatrix[u])[1] == 0
+        pop!(DecisionTree)
+        k -= 1
+        u,tol = DecisionTree[k][1],DecisionTree[k][3]
+        popfirst!(DecisionMatrix[u])
+      end
+      v = DecisionMatrix[u][1]
       w = DecisionTree[k][2] + p[v]
-      if DecisionTree[k][4] == false and S - w < 2*d2*pmax
+      checkedweight = DecisionTree[k][4]
+      if checkedweight == false && S - w < 2*d2*pmax
         checkedweight = true
-        L = [DecisionTree[i] for i in [1:k]]
+        L = [DecisionTree[i] for i in 1:k]
         push!(L,v)
-        w += evaluateweight(L,Sortedweight,p,ph,d2)
-
+        w += evaluateweight(L,Sortedweight,ph,d2)
+      end
+      if w < P_lim[v]
+        push!(DecisionTree,[v,w,tol-(H4[v,3]-H4[u,3]+1),checkedweight])
+        forward = true
+        Current = v
+      else
+        popfirst!(DecisionMatrix[u])
+      end
+    end
+  end
+  Path = [DecisionTree[i][1] for i in 1:size(DecisionTree)[1]]
+  Weight = evaluateweight(Path,Sortedweight,ph,d2) + evaluateweight(Path,Sortedweight,p,10*S)
+  Distance = evaluatedist(Path,I,J,d,D,d1)
+  return Path,Weight,Distance
+end
 
 
   
@@ -289,4 +300,3 @@ function heuristic(MyFileName::String,instant_tol,global_tol)
     
 
 
-end
