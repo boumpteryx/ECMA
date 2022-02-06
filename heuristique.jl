@@ -124,7 +124,7 @@ function evaluatedist(L,Sorted_i,Sorted_j,d,D,d1)
     distance += d[L[l],L[l+1]]
   end
   remaining = d1
-  k = size(L)[1]
+  k = size(L)[1] - 1
   acc = 1
   while k > 0 && remaining > 0
     i,j = Sorted_i[acc],Sorted_j[acc]
@@ -204,11 +204,13 @@ function coeff(i,j)
   return 1
 end
 
-#function heuristic(MyFileName::String,instant_tol,global_tol)
-  #n, s, t, S, d1, d2, p, ph, d, D = read_instance(MyFileName)
-
-  #relax_dual_value = dual_relax(MyFileName)
-function heuristic(instant_tol,global_tol,n, s, t, S, d1, d2, p, ph, d, D)
+function heuristic(MyFileName::String)
+  n, s, t, S, d1, d2, p, ph, d, D = read_instance(MyFileName)
+  global_tol = 5
+  instant_tol = 2
+  timelimit = 60
+  relax_dual_value = dual_relax(MyFileName)
+#function heuristic(instant_tol,global_tol,n, s, t, S, d1, d2, p, ph, d, D,timelimit)
   Ones = Array{Int64,2}(zeros(n,n))
   for i in 1:n
     for j in 1:n
@@ -240,56 +242,91 @@ function heuristic(instant_tol,global_tol,n, s, t, S, d1, d2, p, ph, d, D)
   end
 
   Sortedweight = sortweight(n,p)
+  println(Sortedweight)
   I,J = sortdistance(n,d)
   pmin = p[Sortedweight[n]]
   pmax = p[Sortedweight[1]]
   P_lim = [S - H2[i,3]*pmin for i in 1:n]
+  Distance = n * d[I[1],J[1]]
+  Path = [s]
+  Weight = 0
 
   DecisionTree = [[s,p[s],global_tol,false]]
   DecisionMatrix = [[] for i in 1:n]
   Current = s
-  while Current != t && size(DecisionTree)[1] > 0
+  t0 = time()
+  Started = false
+  iter = 0
+  while (time() - t0 < timelimit) && (Started == false || size(DecisionTree)[1] > 1)
+    iter+=1
     k = size(DecisionTree)[1]
     u,tol = DecisionTree[k][1],DecisionTree[k][3]
     for v in 1:n
       if New_d[u,v] > 0 && ((H4[v,3] - H4[u,3]) <= (-1 + min(tol,instant_tol)))
         i = 1
-        while i < size(DecisionMatrix[u])[1] && (H4[v,3],New_d[u,v]) > (H4[DecisionMatrix[u][i],3],New_d[u,[DecisionMatrix[u][i]]])
-          i += 1
+        done = false
+        while i < size(DecisionMatrix[u])[1] && done == false
+          if (H4[v,3],New_d[u,v]) > (H4[DecisionMatrix[u][i],3],New_d[u,DecisionMatrix[u][i]])
+            i += 1
+          else 
+            done = true
+          end
         end
         insert!(DecisionMatrix[u],i,v)
       end
     end
+    println(DecisionMatrix[s])
     forward = false
-    while forward == false
-      while size(DecisionMatrix[u])[1] == 0
+    while forward == false && (k > 1 || Started == false)
+      Started = true
+      while size(DecisionMatrix[u])[1] == 0 && k > 1
         pop!(DecisionTree)
         k -= 1
-        u,tol = DecisionTree[k][1],DecisionTree[k][3]
-        popfirst!(DecisionMatrix[u])
+        if k > 0
+          u,tol = DecisionTree[k][1],DecisionTree[k][3]
+          if size(DecisionMatrix[u])[1] > 0
+            popfirst!(DecisionMatrix[u])
+          end
+        else 
+          Current = s
+        end
       end
-      v = DecisionMatrix[u][1]
-      w = DecisionTree[k][2] + p[v]
-      checkedweight = DecisionTree[k][4]
-      if checkedweight == false && S - w < 2*d2*pmax
-        checkedweight = true
-        L = [DecisionTree[i] for i in 1:k]
-        push!(L,v)
-        w += evaluateweight(L,Sortedweight,ph,d2)
-      end
-      if w < P_lim[v]
-        push!(DecisionTree,[v,w,tol-(H4[v,3]-H4[u,3]+1),checkedweight])
-        forward = true
-        Current = v
-      else
-        popfirst!(DecisionMatrix[u])
+      if size(DecisionMatrix[u])[1] > 0
+        v = DecisionMatrix[u][1]
+        w = DecisionTree[k][2] + p[v]
+        checkedweight = DecisionTree[k][4]
+        if checkedweight == false && S - w < 2*d2*pmax
+          checkedweight = true
+          L = [DecisionTree[i][1] for i in 1:k]
+          push!(L,v)
+          w += evaluateweight(L,Sortedweight,ph,d2)
+        end
+        path = [DecisionTree[i][1] for i in 1:size(DecisionTree)[1]]
+        if w > P_lim[v] || v in path
+         popfirst!(DecisionMatrix[u])
+        elseif v == t
+          push!(path,v)
+          weight = evaluateweight(path,Sortedweight,ph,d2)
+          for i in path
+            weight += p[i]
+          end
+          distance = evaluatedist(path,I,J,d,D,d1)
+          if weight <= S && distance < Distance
+            Path = path
+            Weight = weight
+            Distance = distance
+          end
+          popfirst!(DecisionMatrix[u])
+        else
+          push!(DecisionTree,[v,w,tol-(H4[v,3]-H4[u,3]+1),checkedweight])
+          forward = true
+          Current = v
+        end  
       end
     end
   end
-  Path = [DecisionTree[i][1] for i in 1:size(DecisionTree)[1]]
-  Weight = evaluateweight(Path,Sortedweight,ph,d2) + evaluateweight(Path,Sortedweight,p,10*S)
-  Distance = evaluatedist(Path,I,J,d,D,d1)
-  return Path,Weight,Distance
+  println(Path," ",Weight," ",Distance," ",(Distance/relax_dual_value)-1," ",iter)
+  return Path,Weight,Distance,(Distance/relax_dual_value)-1
 end
 
 
