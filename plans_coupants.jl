@@ -85,6 +85,8 @@ function plans_coupants(MyFileName::String)
 
       optimize!(m)
       z_star = JuMP.objective_value.(m)
+      x_star = JuMP.getvalue.( m[:x] )
+      y_star = JuMP.getvalue.( m[:y] )
     end
   end
 end
