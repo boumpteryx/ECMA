@@ -1,6 +1,5 @@
 # ECMA
 ## Etude de Cas et Management de la Recherche Opérationelle (cours du MPRO)
-### Antoine Desjardins & Martin Lainée
 
 Pour ce repo nous utilisons Julia 1.6.3 et CPLEX :
 
