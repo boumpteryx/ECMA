@@ -13,7 +13,7 @@ dualisation("20_USA-road-d.BAY.gr")
 # plans_coupants("40_USA-road-d.COL.gr")
 
 ### resolution par LazyCallback (branch-and-cut)
-# branch_and_cut("20_USA-road-d.COL.gr")
+#branch_and_cut("20_USA-road-d.COL.gr")
 
 ### heuristique
 # heuristique("20_USA-road-d.BAY.gr")
