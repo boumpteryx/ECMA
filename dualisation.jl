@@ -31,4 +31,20 @@ function dualisation(MyFileName::String)
 
   #resolution
   optimize!(m)
+
+  object = JuMP.objective_value.(m)
+  x_star = JuMP.getvalue.( m[:x] )
+  y_star = JuMP.getvalue.( m[:y] )
+  t1_star = JuMP.getvalue.( m[:t1] )
+  t2_star = JuMP.getvalue.( m[:t2] )
+  z_star = JuMP.getvalue.( m[:z] )
+  zprim_star = JuMP.getvalue.( m[:zprim] )
+  println("objectif ", object)
+  println("x_star ", x_star)
+  println("y_star ", y_star)
+  println("z_star ", z_star)
+  println("t1_star ", t1_star)
+  println("t2_star ", t2_star)
+  println("zprim_star ", zprim_star)
+
 end
